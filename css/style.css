@@ -1,0 +1,95 @@
+:root{
+    --primaryColor: #126464;
+    --primaryHoverColor: #0f8d8d;
+    --primaryActiveColor: #094444;
+
+    --secondaryColor: #126464;
+    --secondaryHoverColor: #ffffff;
+    --secondaryActiveColor: #ffffff;
+
+    --backgroundColor: #0e3535;
+    --textColor: #ffffff;
+    --lineSeparator: #ffffff50;
+}
+
+.sapMApp{
+    background: var(--backgroundColor);
+}
+
+/* Text */
+.Text{
+    color: var(--textColor);
+}
+
+/* Button */
+
+.Button{
+    background: var(--primaryColor);
+    border-radius: 10px;
+    border: 1px solid var(--lineSeparator);
+    outline: none;
+    padding: 10px;
+    font-weight: bold;
+    height: fit-content;
+    transition: background-color 0.2s;
+    color: var(--textColor);
+}
+.Button:hover{
+    background: var(--primaryHoverColor);
+    cursor: pointer;
+}
+.Button:active{
+    background: var(--primaryActiveColor);
+}
+
+/* Input */
+.Input{
+    background: var(--backgroundColor);
+    color: var(--textColor);
+    border-radius: 10px;
+    border: 1px solid var(--lineSeparator);
+    outline: none;
+    padding: 10px 10px;
+    box-sizing: border-box;
+    height: fit-content;
+}
+
+/* Div */
+.Div{
+    display: flex;
+    gap: 10px;
+}
+
+/* Panel */
+.Panel{
+    border: 1px solid var(--lineSeparator);
+    background: var(--secondaryColor);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+.Panel > div:first-child{
+    border-bottom: 1px solid var(--lineSeparator);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+}
+.Panel > div:last-child{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+}
+.Panel > div{
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+}
