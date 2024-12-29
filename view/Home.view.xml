@@ -6,20 +6,10 @@
 	<Div alignItems="Center" justifyContent="Center" padding="10px">
 		<Panel>
 			<header>
-				<Text text="Titulo"/>
+				<Text text="{data>/text}"/>
 			</header>
-			<Div alignItems="Center" justifyContent="space-between">
-				<Text text="Nome:"/>
-				<Input width="100%" value="{data>/text}"/>
-			</Div>
-			<Div alignItems="Center" justifyContent="space-between">
-				<Text text="Email:"/>
-				<Input width="100%" value="{data>/text}"/>
-			</Div>
-			<Div alignItems="Center" justifyContent="space-between">
-				<Text text="Data de Nascimento:"/>
-				<Input width="100%" value="{data>/text}"/>
-			</Div>
+			<Input width="100%" value="{data>/text}"/>
+			<Input width="100%" value="{data>/text}"/>
 			<footer>
 				<Button text="Cancelar"/>
 				<Button text="Confirmar"/>

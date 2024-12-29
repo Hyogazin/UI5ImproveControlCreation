@@ -15,19 +15,43 @@ sap.ui.define([
         },
 
 		onAfterRendering: function(){
-			if(!this._eventsToAddAfterRendering) return;
+			if(!this._bindedElements) return;
 			
-			for(let event of this._eventsToAddAfterRendering){
-				let domRef = document.getElementById(event.id);
-				if(domRef){
-					domRef.addEventListener(event.htmlEventName, (e) => this.fireEvent(event.eventName));
+			let srcElement = this.getDomRef();
+			if(!srcElement) return;
+
+			for(let id in this._bindedElements){
+				let bindedElement = this._bindedElements[id];
+				let htmlElement = srcElement.id === id ? srcElement : srcElement.querySelector("#"+id);
+				if(!bindedElement || !htmlElement) continue;
+
+				let hasChangeableAttribute = false;
+				for(let attribute in bindedElement.properties){
+					if(attribute === "style" || attribute === "class") continue;
+					hasChangeableAttribute = true;
+					break;
+				}
+				if(hasChangeableAttribute){
+					htmlElement.addEventListener("change", (e) => {
+						let element = e.currentTarget;
+						for(let attribute in bindedElement.properties){
+							if(attribute === "style" || attribute === "class") continue;
+							let bindedProperty = bindedElement.properties[attribute];
+							this.setProperty(bindedProperty.propertyName, element[attribute], true);
+						}
+					});
+				}
+				for(let attribute in bindedElement.events){
+					let bindedEvent = bindedElement.events[attribute];
+					htmlElement.addEventListener(bindedEvent.htmlEventName, (e) => {
+						this.fireEvent(bindedEvent.eventName, {value: e.currentTarget.value});
+					});
 				}
 			}
-			delete this._eventsToAddAfterRendering;
 		},
 
 		_renderer(oRm){
-			this._eventsToAddAfterRendering = [];
+			this._bindedElements = {};
 			let metadata = this._getMetadataPaths();
 			let html = this.HTMLTemplate(metadata);
 			this._validateHTML(metadata, html);
@@ -45,19 +69,13 @@ sap.ui.define([
 			let metadata = this.getMetadata();
 
 			let properties = metadata.getProperties();
-			for(let key of Object.keys(properties)){
-				let property = this.getProperty(key);
-				result.properties[key] = property ? `{{properties.${key}}}` : "";
-			}
+			for(let key of Object.keys(properties)) result.properties[key] = `{{properties.${key}}}`;
 
 			let events = metadata.getEvents();
-			for(let key of Object.keys(events)) result.events[key] = `{{events.${key}}}`
+			for(let key of Object.keys(events)) result.events[key] = `{{events.${key}}}`;
 
 			let aggregations = metadata.getAggregations();
-			for(let key of Object.keys(aggregations)){
-				let aggregation = this.getAggregation(key);
-				result.aggregations[key] = aggregation ? `{{aggregations.${key}}}` : "";
-			}
+			for(let key of Object.keys(aggregations)) result.aggregations[key] = `{{aggregations.${key}}}`;
 
 			return result;
 		},
@@ -91,23 +109,32 @@ sap.ui.define([
 			if(!eventName) return;
 
 			let htmlEventName = attribute.substr(2);
-			this._eventsToAddAfterRendering.push({
-				id: id,
+			if(!this._bindedElements[id]) this._bindedElements[id] = {id: id, events: [], properties: []};
+			this._bindedElements[id].events[attribute] = {
 				htmlEventName: htmlEventName,
 				eventName: eventName
-			});
+			};
 		},
 
-		_assignValuesByPath(metadata, element, attribute){
+		_assignValuesByPath(metadata, element, attribute, id){
 			let attributeValue = element.getAttribute(attribute);
+			let property = null;
 			for(let key in metadata.properties){
 				let propertyPath = metadata.properties[key];
 				if(!attributeValue.includes(propertyPath)) continue;
-				
-				let propertyValue = this.getProperty(key)
-				if(propertyValue) attributeValue = attributeValue.replace(propertyPath, propertyValue);
+				property = key;
+				let propertyValue = this.getProperty(property)
+				if(propertyValue !== null) attributeValue = attributeValue.replace(propertyPath, propertyValue);
 			}
 			element.setAttribute(attribute, attributeValue);
+			
+			if(!property) return attributeValue;;
+			if(!this._bindedElements[id]) this._bindedElements[id] = {id: id, events: [], properties: []};
+			this._bindedElements[id].properties[attribute] = {
+				propertyName: property,
+				attributeName: attribute,
+			};
+			return attributeValue;
 		},
 
 		_renderHTMLText(oRm, metadata, text){
@@ -118,7 +145,7 @@ sap.ui.define([
 				if(index < 0) continue;
 
 				let property = this.getProperty(key);
-				if(!property) continue;
+				if(property === null) continue;
 
 				text = text.replace(new RegExp(path, "g"), property);
 			}
@@ -153,8 +180,7 @@ sap.ui.define([
 					this._prepareArrayToAddEventsAfterRendering(metadata, element, attribute, id);
 					element.removeAttribute(attribute);
 				} else {
-					this._assignValuesByPath(metadata, element, attribute);
-					let attributeValue = element.getAttribute(attribute);
+					let attributeValue = this._assignValuesByPath(metadata, element, attribute, id);
 					oRm.attr(attribute, attributeValue);
 				}
 			}

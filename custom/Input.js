@@ -7,7 +7,7 @@ sap.ui.define([
 			properties: {
 				visible: {type: "boolean", defaultValue: true},
                 tooltip: {type: "string"},
-                value: {type: "string", defaultValue: "", bindable: true},
+                value: {type: "string", defaultValue: ""},
                 width: {type: "string"}
 			},
             events: {
